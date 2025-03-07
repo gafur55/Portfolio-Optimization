@@ -75,6 +75,7 @@ class DBManager():
         """Adds a new stock portfolio for a client and returns portfolio ID."""   
 
         symbols_str = ",".join(symbols)
+        print(type(symbols_str))
         # Get California time
         pacific = pytz.timezone("America/Los_Angeles")
         current_time = datetime.now(pacific)
