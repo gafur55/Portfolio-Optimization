@@ -21,6 +21,7 @@ class DBManager():
 
     def get_db_path(self):
         """Returns the database file path."""
+        
         return self.db_path
     
 
