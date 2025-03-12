@@ -40,6 +40,6 @@ class DataFetcher:
 
 
 
-test = DataFetcher(['AAPL', 'TSLA'], False)
-data = test.fetch_stock_data()
-print(data)
+# test = DataFetcher(['AAPL', 'TSLA'], False)
+# data = test.fetch_stock_data()
+# print(data)
