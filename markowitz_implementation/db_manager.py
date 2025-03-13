@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 import pytz
 import re
+import numpy as np 
 
 
 class DBManager():
@@ -128,11 +129,11 @@ class DBManager():
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT optimized_weights, expected_return, risk_metric FROM portfolio_results WHERE portfolio_id = ?",
+                "SELECT method_name, optimized_weights, expected_return, risk_metric, sharpe_ratio FROM portfolio_results WHERE portfolio_id = ?",
                 (portfolio_id,)
             )
             results = cursor.fetchall()
-            return [{"allocation": eval(row[0]), "expected_return": row[1], "risk_metric": row[2]} for row in results] if results else None
+            return [{"method_name":row[0], "allocation": np.fromstring(row[1].strip("[]"), sep=" "), "expected_return": row[2], "risk_metric": row[3], "sharpe_ratio": row[4]} for row in results] if results else None
 
 
     def get_client_id(self, client_name: str) -> int | None:
