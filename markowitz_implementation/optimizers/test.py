@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from db_manager import DBManager
 from data_fetcher import DataFetcher
 
-portfolio_id = 6
+portfolio_id = 1
 db_manager = DBManager()
 
 # print(db_manager.get_portfolio_symbols(1))
@@ -20,7 +20,11 @@ num_of_stocks = db_manager.get_number_of_symbols(portfolio_id)
 
 monte_carlo_optimizer = MonteCarloOptimizer(tick_data, num_of_stocks, portfolio_id)
 
-# print(monte_carlo_optimizer)
+
+print('')
+print('='*80)
+print("Monte Carlo Results")
+print('='*80)
 
 print('')
 print('='*80)

@@ -9,13 +9,14 @@ class MonteCarloOptimizer(BasePortfolioOptimizer):
 
 
     def __init__(self, stock_data, num_of_stocks, portfolio_id):
-        super().__init__(stock_data, num_of_stocks, portfolio_id)
+        super().__init__(stock_data, num_of_stocks, portfolio_id, method_name="Monte Carlo Simulation")
         self._simulations_df = self.optimize()
         self._max_sharpe_ratio = self.set_max_sharpe_ratio()
         self._min_volatility = self.set_min_volatility()
+        self.save_results_to_db(self.get_max_sharpe_ratio())
 
 
-    def optimize(self, num_simulations=3000):
+    def optimize(self, num_simulations=10000):
         log_return = np.log(1 + self.calculate_returns())
 
         all_weights = np.zeros((num_simulations, self.get_num_assets()))

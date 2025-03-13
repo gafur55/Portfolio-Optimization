@@ -21,7 +21,7 @@ class DBManager():
 
     def get_db_path(self):
         """Returns the database file path."""
-        
+
         return self.db_path
     
 
@@ -47,9 +47,11 @@ class DBManager():
                 CREATE TABLE IF NOT EXISTS portfolio_results (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     portfolio_id INTEGER,
+                    method_name TEXT NOT NULL,
                     optimized_weights TEXT NOT NULL,
                     expected_return REAL,
                     risk_metric REAL,
+                    sharpe_ratio REAL,
                     FOREIGN KEY (portfolio_id) REFERENCES portfolios(id) ON DELETE CASCADE
                 );
             ''')
@@ -195,5 +197,23 @@ class DBManager():
             symbols = cursor.fetchone()
             symbols_str = symbols[0]
             symbols_list = re.split(r"\W+", symbols_str)
+            
+            #This gets rid of empty elements in the array
+            symbols_list = [symbol for symbol in symbols_list if symbol]
             return(len(symbols_list))
         
+    
+    def get_portfolio_symbols(self, portfolio_id: int) -> list[str] | None:
+        """Returns the symbols of the portfolio in a list"""
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT symbols FROM portfolios WHERE id = ?", (portfolio_id,))
+            symbols = cursor.fetchone()
+
+            if symbols:
+                symbols_str = symbols[0]
+                symbols_list = re.split(r"\W+", symbols_str)
+                return [symbol for symbol in symbols_list if symbol]
+            
+        return None 
