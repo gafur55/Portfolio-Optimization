@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class DataFetcher:
-    def __init__(self, stock_symbols:list[str], should_download:bool, start_date:str = "2020-01-01", end_date:str = "2025-01-01"):
+    def __init__(self, stock_symbols:list[str], should_download:bool, start_date:str = "2020-01-01", end_date:str = datetime.today().strftime('%Y-%m-%d')):
         """Initialize the DataFetcher."""
         
         self.stock_symbols = stock_symbols
