@@ -90,7 +90,7 @@ class DBManager():
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO portfolios (client_id, symbols, created_at) VALUES (?, ?, ?)", 
+                "INSERT INTO portfolios (client_id, symbols, created_at) VALUES (?, ?, ?)",
                 (client_id, symbols_str, current_time_pacific)
             )
             conn.commit()

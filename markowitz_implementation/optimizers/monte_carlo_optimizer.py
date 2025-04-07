@@ -17,31 +17,43 @@ class MonteCarloOptimizer(BasePortfolioOptimizer):
 
 
     def optimize(self, num_simulations=10000):
+        # Calculate the log of returns
         log_return = np.log(1 + self.calculate_returns())
 
+        #Prep an array to store the weights as they are generated, 10000 iterations for each of our 4 symbols.
         all_weights = np.zeros((num_simulations, self.get_num_assets()))
 
+        # Prep an array to store the returns as they are generated, 10000 possible return values.
         ret_arr = np.zeros(num_simulations)
 
+        # Prep an array to store the volatilities as they are generated, 10000 possible volatility values.
         vol_arr = np.zeros(num_simulations)
 
+        # Prep an array to store the sharpe ratios as they are generated, 10000 possible Sharpe Ratios.
         sharpe_arr = np.zeros(num_simulations)
 
+        #Simulation starts.
         for ind in range(num_simulations):
-            weights = np.array(np.random.random(self.get_num_assets()))
 
+            # First, calculate the weights.
+            weights = np.array(np.random.random(self.get_num_assets())) #Randomly chosen weights
             weights = weights / np.sum(weights)
 
+            # Add the weights, to the `weights_arrays`.
             all_weights[ind, :] = weights
 
+            # Calculate the expected log returns, and add them to the `returns_array`.
             ret_arr[ind] = np.sum((log_return.mean() * weights) * 252)
-
+            
+            # Calculate the volatility (SD of the portfolio), and add them to the `volatility_array`.
             vol_arr[ind] = np.sqrt(
                 np.dot(weights.T, np.dot(log_return.cov() * 252, weights))
             )
 
+            # Calculate the Sharpe Ratio and Add it to the `sharpe_ratio_array`.
             sharpe_arr[ind] = ret_arr[ind]/vol_arr[ind]
-
+        
+        # Combine all Return, Volatility, Sharpe Ratio, Weights data into single dataframe
         simulations_data = [ret_arr, vol_arr, sharpe_arr, all_weights]
 
         simulations_df = pd.DataFrame(data=simulations_data).T
@@ -76,7 +88,6 @@ class MonteCarloOptimizer(BasePortfolioOptimizer):
         return self._simulations_df.loc[self._simulations_df['Volatility'].idxmin()]
         
 
-    
     def get_min_volatility(self):
         """Get the Min Volatility from the run."""
 

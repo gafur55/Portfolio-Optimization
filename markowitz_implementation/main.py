@@ -12,6 +12,8 @@ from optimizers.monte_carlo_optimizer import MonteCarloOptimizer  # ✅ Fix Impo
 
 from data_fetcher import DataFetcher
 
+from optimizers.slsqp_optimization import SLSQPOptimizer
+
 # Initialize Rich Console
 console = Console()
 
@@ -62,9 +64,7 @@ def display_portfolios(db, client_id, client_name):
 
 
 def optimize_portfolio(db, portfolio_id, symbols):
-    """Runs portfolio optimization and saves the results to the database."""
-
-    console.print(f"\n⚡ [bold cyan]Running Monte Carlo Optimization for Portfolio {portfolio_id}...[/bold cyan]\n")
+    """Runs portfolio optimization (Monte Carlo and SLSQP) and saves the results to the database."""
 
     # Fetch stock data
     data_fetcher = DataFetcher(symbols, False)  # False means no caching
@@ -73,9 +73,16 @@ def optimize_portfolio(db, portfolio_id, symbols):
     # Get number of stocks
     num_of_stocks = len(symbols)
 
-    # Run Monte Carlo Optimization
-    optimizer = MonteCarloOptimizer(stock_data, num_of_stocks, portfolio_id)
+    # 1. Run Monte Carlo
+    console.print(f"\n⚡ [bold cyan]Running Monte Carlo Optimization for Portfolio {portfolio_id}...[/bold cyan]\n")
+    monte_carlo_optimizer = MonteCarloOptimizer(stock_data, num_of_stocks, portfolio_id)
 
+    # 2. Run SLSQP
+    console.print(f"\n⚡ [bold cyan]Running SLSQP Optimization for Portfolio {portfolio_id}...[/bold cyan]\n")
+    slsqp_optimizer = SLSQPOptimizer(stock_data, num_of_stocks, portfolio_id)
+
+    # Both optimizations save results automatically
+    # Show optimization results
     display_optimization_results(db, portfolio_id)
 
 
@@ -112,12 +119,14 @@ def display_optimization_results(db, portfolio_id):
         if i > 0:
             table.add_row("─" * 20, "─" * 15, "─" * 17, "─" * 12, "─" * 20, end_section=True)
 
+        method_name = result.get("method_name", "Unknown Method")  # Pull the method name
+
         table.add_row(
-            "Monte Carlo Simulation",
-            f"{result['expected_return']:.4%}",  # ✅ 4 decimal places
-            f"{result['risk_metric']:.4%}",  # ✅ 4 decimal places
-            f"{result['sharpe_ratio']:.4f}",  # ✅ 4 decimal places
-            formatted_allocations  # ✅ Stock allocations in readable format
+            method_name,
+            f"{result['expected_return']:.4%}",
+            f"{result['risk_metric']:.4%}",
+            f"{result['sharpe_ratio']:.4f}",
+            formatted_allocations
         )
 
     console.print(table)
