@@ -134,23 +134,33 @@ def display_optimization_results(db, portfolio_id):
 
 
 def main():
-    """Main function to interact with the user and manage portfolios."""
+    """Main function to run the portfolio optimization program."""
     db = DBManager()
 
     # Display all clients at the start
     display_clients(db)
 
-    # Get client name with a visual input prompt
+    # Get client name
     client_name = Prompt.ask("[bold cyan]Enter client name[/bold cyan]").strip()
+    
+    # Check if user wants to exit
+    if client_name.lower() == 'q':
+        console.print("[bold yellow]Goodbye![/bold yellow]")
+        return
 
     # Check if client exists
-    if db.client_exists(client_name):
-        console.print(f"✅ [bold green]Client '{client_name}' found in the database![/bold green]")
-        client_id = db.get_client_id(client_name)
+    client_id = db.get_client_id(client_name)
+
+    if client_id:
+        console.print(f"✅ [bold green]Client '{client_name}' found![/bold green]")
 
         # Ask whether to display portfolios, add a new one, or optimize
         while True:
-            action = Prompt.ask("[bold yellow]Do you want to (1) Display portfolios, (2) Add a new portfolio, or (3) Optimize a portfolio?[/bold yellow]", choices=["1", "2", "3"])
+            action = Prompt.ask("[bold yellow]Do you want to (1) Display portfolios, (2) Add a new portfolio, (3) Optimize a portfolio, or (q) Quit?[/bold yellow]", choices=["1", "2", "3", "q"])
+
+            if action.lower() == "q":
+                console.print("[bold yellow]Goodbye![/bold yellow]")
+                return
 
             if action == "1":
                 portfolios = display_portfolios(db, client_id, client_name)
@@ -158,12 +168,18 @@ def main():
                     continue
 
                 portfolio_id = Prompt.ask("[bold cyan]Enter Portfolio ID to view optimization results or press Enter to skip[/bold cyan]", default="").strip()
+                if portfolio_id.lower() == 'q':
+                    console.print("[bold yellow]Goodbye![/bold yellow]")
+                    return
                 if portfolio_id:
                     display_optimization_results(db, int(portfolio_id))
 
             elif action == "2":
                 # Get stock symbols
-                symbols_input = Prompt.ask(f"[bold cyan]Enter stock symbols for {client_name} (comma-separated)[/bold cyan]").strip()
+                symbols_input = Prompt.ask(f"[bold cyan]Enter stock symbols for {client_name} (comma-separated) or 'q' to quit[/bold cyan]").strip()
+                if symbols_input.lower() == 'q':
+                    console.print("[bold yellow]Goodbye![/bold yellow]")
+                    return
                 symbols = [s.strip().upper() for s in symbols_input.split(",") if s.strip()]
 
                 if not symbols:
@@ -177,7 +193,11 @@ def main():
                 if not portfolios:
                     continue
 
-                portfolio_id = int(Prompt.ask("[bold cyan]Enter Portfolio ID to optimize[/bold cyan]"))
+                portfolio_id = Prompt.ask("[bold cyan]Enter Portfolio ID to optimize or 'q' to quit[/bold cyan]")
+                if portfolio_id.lower() == 'q':
+                    console.print("[bold yellow]Goodbye![/bold yellow]")
+                    return
+                portfolio_id = int(portfolio_id)
                 portfolio_symbols = db.get_portfolio_symbols(portfolio_id)
 
                 optimize_portfolio(db, portfolio_id, portfolio_symbols)
@@ -187,7 +207,10 @@ def main():
         client_id = db.add_client(client_name)
 
         # Get stock symbols
-        symbols_input = Prompt.ask(f"[bold cyan]Enter stock symbols for {client_name} (comma-separated)[/bold cyan]").strip()
+        symbols_input = Prompt.ask(f"[bold cyan]Enter stock symbols for {client_name} (comma-separated) or 'q' to quit[/bold cyan]").strip()
+        if symbols_input.lower() == 'q':
+            console.print("[bold yellow]Goodbye![/bold yellow]")
+            return
         symbols = [s.strip().upper() for s in symbols_input.split(",") if s.strip()]
 
         if not symbols:
