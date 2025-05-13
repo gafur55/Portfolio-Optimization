@@ -67,7 +67,7 @@ def optimize_portfolio(db, portfolio_id, symbols):
     """Runs portfolio optimization (Monte Carlo and SLSQP) and saves the results to the database."""
 
     # Fetch stock data
-    data_fetcher = DataFetcher(symbols, False)  # False means no caching
+    data_fetcher = DataFetcher(symbols, True)  # False means no caching
     stock_data = data_fetcher.fetch_stock_data()
 
     # Get number of stocks

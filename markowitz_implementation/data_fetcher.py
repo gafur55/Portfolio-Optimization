@@ -16,13 +16,17 @@ class DataFetcher:
 
     def fetch_stock_data(self):
         """Fetch historical Close prices from Yahoo Finance.
-        Only consists of Ticker Symbol, Date and Close Price"""
+        Only consists of Ticker Symbol, Date and Close Price (monthly)."""
 
         data = yf.download(self.stock_symbols, start=self.start_date, end=self.end_date)["Close"]
-        if self.should_download:
-            self.download_data_locally(data)
 
-        return data
+        # Convert to monthly data using the last trading day of each month
+        monthly_data = data.resample('ME').last()
+
+        if self.should_download:
+            self.download_data_locally(monthly_data)
+
+        return monthly_data
 
 
     def download_data_locally(self, data: pd.DataFrame):

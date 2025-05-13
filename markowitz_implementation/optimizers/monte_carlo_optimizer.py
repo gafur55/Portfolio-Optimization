@@ -43,11 +43,11 @@ class MonteCarloOptimizer(BasePortfolioOptimizer):
             all_weights[ind, :] = weights
 
             # Calculate the expected log returns, and add them to the `returns_array`.
-            ret_arr[ind] = np.sum((log_return.mean() * weights) * 252)
+            ret_arr[ind] = np.sum((log_return.mean() * weights) * 12)
             
             # Calculate the volatility (SD of the portfolio), and add them to the `volatility_array`.
             vol_arr[ind] = np.sqrt(
-                np.dot(weights.T, np.dot(log_return.cov() * 252, weights))
+                np.dot(weights.T, np.dot(log_return.cov() * 12, weights))
             )
 
             # Calculate the Sharpe Ratio and Add it to the `sharpe_ratio_array`.

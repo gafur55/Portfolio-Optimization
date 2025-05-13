@@ -23,10 +23,10 @@ class SLSQPOptimizer(BasePortfolioOptimizer):
         """
         self.weights = np.array(weights)
 
-        ret = np.sum(self._log_return.mean() * weights) * 252
+        ret = np.sum(self._log_return.mean() * weights) * 12
 
         vol = np.sqrt(
-            np.dot(weights.T, np.dot(self._log_return.cov() * 252, weights))
+            np.dot(weights.T, np.dot(self._log_return.cov() * 12, weights))
         )
 
         sr = ret / vol
