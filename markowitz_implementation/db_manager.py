@@ -88,6 +88,7 @@ class DBManager():
         current_time_pacific = current_time.strftime(f"%Y-%m-%d %H:%M:%S ({timezone_abbr})")
 
         with sqlite3.connect(self.db_path) as conn:
+            conn.execute("PRAGMA foreign_keys = ON")
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO portfolios (client_id, symbols, created_at) VALUES (?, ?, ?)",
@@ -148,11 +149,26 @@ class DBManager():
 
     def delete_client(self, client_id: int):
         """Deletes a client and all their associated portfolios and results."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("PRAGMA foreign_keys = ON")
+                cursor = conn.cursor()
 
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM clients WHERE id = ?", (client_id,))
-            conn.commit()
+                # Check if client exists first
+                cursor.execute("SELECT 1 FROM clients WHERE id = ?", (client_id,))
+                if not cursor.fetchone():
+                    print(f"⚠️ Client ID {client_id} not found in the database.")
+                    return False
+
+                # Attempt deletion
+                cursor.execute("DELETE FROM clients WHERE id = ?", (client_id,))
+                conn.commit()
+            return True
+
+        except sqlite3.Error as e:
+            print(f"❌ SQLite error while deleting client: {e}")
+            return False
+
 
 
     def get_all_clients(self):

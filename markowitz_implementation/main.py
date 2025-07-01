@@ -168,7 +168,10 @@ def main():
 
         # Ask whether to display portfolios, add a new one, or optimize
         while True:
-            action = Prompt.ask("[bold yellow]Do you want to (1) Display portfolios, (2) Add a new portfolio, (3) Optimize a portfolio, or (q) Quit?[/bold yellow]", choices=["1", "2", "3", "q"])
+            action = Prompt.ask(
+            "[bold yellow]Choose an action:[/bold yellow] (1) Display portfolios, (2) Add a new portfolio, (3) Optimize a portfolio, (4) Delete this client, (q) Quit",
+            choices=["1", "2", "3", "4", "q"])
+
 
             if action.lower() == "q":
                 console.print("[bold yellow]Goodbye![/bold yellow]")
@@ -213,6 +216,16 @@ def main():
                 portfolio_symbols = db.get_portfolio_symbols(portfolio_id)
 
                 optimize_portfolio(db, portfolio_id, portfolio_symbols)
+
+            elif action == "4":
+                confirm = Prompt.ask(f"[bold red]⚠️ Are you sure you want to delete client '{client_name}' and ALL their portfolios and results? (yes/no)[/bold red]").strip().lower()
+                if confirm == "yes":
+                    success = db.delete_client(client_id)
+                    if success:
+                        console.print(f"✅ [bold green]Client '{client_name}' deleted successfully.[/bold green]")
+                        return  # Exit to main menu (optional)
+                    else:
+                        console.print("[bold red]❌ Failed to delete client from database.[/bold red]")
 
     else:
         console.print(f"⚠️ [bold yellow]Client '{client_name}' not found. Creating a new client...[/bold yellow]")
