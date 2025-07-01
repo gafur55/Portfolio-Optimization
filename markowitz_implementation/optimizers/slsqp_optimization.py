@@ -8,14 +8,36 @@ import scipy.optimize as sci_opt
 class SLSQPOptimizer(BasePortfolioOptimizer):
     """Sequential Least Squares Programming (SLSQP) Optimizer."""
 
-    def __init__(self, stock_data, num_of_stocks, portfolio_id):
+    def __init__(self, stock_data, num_of_stocks, portfolio_id, custom_bounds=None):
         super().__init__(stock_data, num_of_stocks, portfolio_id, method_name="SLSQP")
-        self._log_return = np.log(1 + self.calculate_returns())
+
+        self.tickers = stock_data.columns.tolist()
+        self.ticker_index = {ticker: i for i, ticker in enumerate(self.tickers)}
+        self.custom_bounds = self._build_bounds(custom_bounds)
+
+        self._log_return = np.log1p(self.returns).dropna()
+        self._mean_log = self._log_return.mean() * 12
+        self._cov_log = self._log_return.cov() * 12
+
         self._optimized_result = self.optimize()
         self._optimized_metrics = self.get_optimized_metrics()
-        self.save_results_to_db(self.get_optimized_metrics())
+        self.save_results_to_db(self._optimized_metrics)
 
 
+    def _build_bounds(self, custom_bounds: dict | None) -> list[tuple[float, float]]:
+        """Build per-asset bounds from optional user-provided constraints."""
+        bounds = [(0.0, 1.0)] * self.num_of_stocks
+
+        if custom_bounds:
+            for ticker, (min_w, max_w) in custom_bounds.items():
+                if ticker not in self.ticker_index:
+                    raise ValueError(f"Ticker '{ticker}' not found in stock data.")
+                idx = self.ticker_index[ticker]
+                bounds[idx] = (min_w, max_w)
+
+        return bounds
+
+    
     def get_metrics(self, weights: list) -> np.array:
         """
         With a given set of weights, return the portfolio returns,
@@ -46,20 +68,16 @@ class SLSQPOptimizer(BasePortfolioOptimizer):
 
     def optimize(self):
         """Run SLSQP optimization to maximize Sharpe Ratio."""
-        bounds = tuple((0, 1) for _ in range(self.num_of_stocks))
-
         constraints = {'type': 'eq', 'fun': self.check_sum}
-
-        init_guess = self.num_of_stocks * [1 / self.num_of_stocks]
+        init_guess = [1 / self.num_of_stocks] * self.num_of_stocks
 
         optimized_result = sci_opt.minimize(
             self.grab_negative_sharpe,
             init_guess,
             method='SLSQP',
-            bounds=bounds,
+            bounds=self.custom_bounds,
             constraints=constraints
         )
-
         return optimized_result
 
 

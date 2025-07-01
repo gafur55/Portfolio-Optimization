@@ -39,7 +39,7 @@ class BasePortfolioOptimizer(ABC):
 
     def calculate_covariance(self):
         """Compute covariance matrix."""
-
+        
         return self.returns.cov()
     
 

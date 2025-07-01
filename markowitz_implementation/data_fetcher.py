@@ -5,7 +5,8 @@ from datetime import datetime
 
 
 class DataFetcher:
-    def __init__(self, stock_symbols:list[str], should_download:bool, start_date:str = "2020-01-01", end_date:str = datetime.today().strftime('%Y-%m-%d')):
+    def __init__(self, stock_symbols:list[str], should_download:bool, start_date:str = "2020-01-01", end_date:str = "2025-05-31"):
+        #end_date:str = datetime.today().strftime('%Y-%m-%d')
         """Initialize the DataFetcher."""
         
         self.stock_symbols = stock_symbols
@@ -22,7 +23,8 @@ class DataFetcher:
 
         # Convert to monthly data using the last trading day of each month
         monthly_data = data.resample('ME').last()
-
+        monthly_data = monthly_data[self.stock_symbols]
+        
         if self.should_download:
             self.download_data_locally(monthly_data)
 

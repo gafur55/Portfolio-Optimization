@@ -66,22 +66,34 @@ def display_portfolios(db, client_id, client_name):
 def optimize_portfolio(db, portfolio_id, symbols):
     """Runs portfolio optimization (Monte Carlo and SLSQP) and saves the results to the database."""
 
-    # Fetch stock data
-    data_fetcher = DataFetcher(symbols, True)  # False means no caching
+    data_fetcher = DataFetcher(symbols, True)
     stock_data = data_fetcher.fetch_stock_data()
-
-    # Get number of stocks
+    stock_data = stock_data[symbols]
     num_of_stocks = len(symbols)
+
+    # 🟡 Prompt for per-stock constraints
+    console.print("[bold yellow]Optional: Set min/max weight constraints for any stock.[/bold yellow]")
+    custom_bounds = {}
+    for symbol in symbols:
+        response = Prompt.ask(f"Enter min,max allocation for [bold cyan]{symbol}[/bold cyan] (e.g., 0.1,0.5), or press Enter to skip", default="").strip()
+        if response:
+            try:
+                min_w, max_w = map(float, response.split(","))
+                if 0 <= min_w <= max_w <= 1:
+                    custom_bounds[symbol] = (min_w, max_w)
+                else:
+                    console.print("[bold red]⚠️ Bounds must be between 0 and 1, and min ≤ max.[/bold red]")
+            except ValueError:
+                console.print("[bold red]⚠️ Invalid format. Skipping this stock.[/bold red]")
 
     # 1. Run Monte Carlo
     console.print(f"\n⚡ [bold cyan]Running Monte Carlo Optimization for Portfolio {portfolio_id}...[/bold cyan]\n")
     monte_carlo_optimizer = MonteCarloOptimizer(stock_data, num_of_stocks, portfolio_id)
 
-    # 2. Run SLSQP
+    # 2. Run SLSQP with constraints
     console.print(f"\n⚡ [bold cyan]Running SLSQP Optimization for Portfolio {portfolio_id}...[/bold cyan]\n")
-    slsqp_optimizer = SLSQPOptimizer(stock_data, num_of_stocks, portfolio_id)
+    slsqp_optimizer = SLSQPOptimizer(stock_data, num_of_stocks, portfolio_id, custom_bounds=custom_bounds)
 
-    # Both optimizations save results automatically
     # Show optimization results
     display_optimization_results(db, portfolio_id)
 
